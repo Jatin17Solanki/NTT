@@ -1,11 +1,23 @@
 ## Potential Use Cases
+
+#### Gaming
 - Reputation points in an online game
-- Proof of attendance of an event
 - Skills of character in a game
+
+#### Certification - For a course, participating workshop/hackathon/event
+- Proof of attendance of an event
 - Badges awarded to users on task completion/competition(Eg skill badges in hackerrank)
 - Issue certificates for courses
+
+#### Claims / Skill badges
+- Something like what happens on linkedin wherein a user claims that his connection is good at xyz
+- letter or recommendation
+- shoutouts
+
+#### Other
 - Token as membership proof
-- One time ticketing service (a scenario where you dont wont the tickets to be sold further)
+- One time ticketing service (a scenario where you dont want the tickets to be sold further hence non transferable)
+- 
 
 ---
 
