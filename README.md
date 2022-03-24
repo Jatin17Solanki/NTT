@@ -17,7 +17,6 @@
 #### Other
 - Token as membership proof
 - One time ticketing service (a scenario where you dont want the tickets to be sold further hence non transferable)
-- 
 
 ---
 
