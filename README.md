@@ -5,6 +5,7 @@
 - Badges awarded to users on task completion/competition(Eg skill badges in hackerrank)
 - Issue certificates for courses
 - Token as membership proof
+- One time ticketing service (a scenario where you dont wont the tickets to be sold further)
 
 ---
 
