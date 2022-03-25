@@ -53,3 +53,13 @@
 - https://www.lvlprotocol.xyz/
 
 ---
+
+## Resources
+
+- https://github.com/ethereum/EIPs/issues/1238
+- https://github.com/violetprotocol/ERC1238-token/blob/main/contracts/ERC1238/IERC1238.sol
+- https://github.com/violetprotocol/ERC1238-token/blob/main/contracts/ERC1238/ERC1238.sol
+- [Level protocol whitepaper](https://docs.google.com/document/d/1mv4vfrYRBwc8nI7jGBoqDITV-desH_UhFNA3UW8dUnw/edit)
+
+
+---
