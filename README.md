@@ -46,7 +46,7 @@
 
 ---
 
-## List of NFT based dapps for reference
+## List of NTT based dapps for reference
 
 - https://mintkudos.xyz/
 - https://poap.xyz/
