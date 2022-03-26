@@ -37,10 +37,17 @@
   - Infura
   - Filecoin
   - Centralized storage
--  **Ch6 : Smart Contract Security**  
+- **Ch6 : Smart Contract Security**  
   - Reentracy Attack
   - Arithmetic overflow / Underflow attack
   - Forced Ether attact   
+- **Ch7 : NTT**
+  - Brief application overview   
+  - Token proposal
+  - Use cases
+  - Tech Stack for application
+  
+---
   
   
 
