@@ -18,7 +18,7 @@
     - ECC
     - Generating address
   - Transactions
-  - Smart Contracts
+  - Solidity and Smart Contracts
   - Consenus (Required ?)
 - **Ch2 : Wallets**
   - What are Wallets
