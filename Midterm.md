@@ -29,9 +29,7 @@
   - ERC20
   - ERC721
   - ERC1155     
-- **Ch4 : Layer 2 Scaling Solutions**
-  - Why do you need L2 solutions
-  - Polygon 
+
 - **Ch5 : Storage**
   - On Chain Storage
   - Infura
@@ -46,6 +44,7 @@
   - Token proposal
   - Use cases
   - Tech Stack for application
+    - Explain why each framework is chosen (polygon .. ) 
   
 ---
   
