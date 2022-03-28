@@ -6,45 +6,37 @@
 
 # Index for Background Section
 
-- **Ch1 : Ethereum**
+- **BACKGROUND**
   - What is Ethereum?
-  - Ethereum's Components
-  - Ethereum Clients (Required ?)
-  - Types of Accounts - EOA and Contracts
+  - Ethereum Clients 
   - Public-Private / Cryptography
-    - Intro
-    - Private key
-    - Public key
-    - ECC
-    - Generating address
+  - Smart Contracts
   - Transactions
-  - Solidity and Smart Contracts
-  - Consenus (Required ?)
-- **Ch2 : Wallets**
-  - What are Wallets
-  - Types
-  - Metamask 
-- **Ch3 : Tokens**
-  - What are tokens and token standards
-  - ERC20
-  - ERC721
-  - ERC1155     
+  - Wallet and Types
+  - Fungible tokens and erc20   
+  - NFTs and erc721
+  - erc1155
+  - what are NTTs
+  - Use cases for NTTs
+  - what this project is about
 
-- **Ch5 : Storage**
-  - On Chain Storage
-  - Infura
-  - Filecoin
-  - Centralized storage
-- **Ch6 : Smart Contract Security**  
-  - Reentracy Attack
-  - Arithmetic overflow / Underflow attack
-  - Forced Ether attact   
-- **Ch7 : NTT**
-  - Brief application overview   
-  - Token proposal
-  - Use cases
-  - Tech Stack for application
-    - Explain why each framework is chosen (polygon .. ) 
+- **METHODOLOGY**
+  - Tech stack : why each is used
+    - Metamask
+    - Infura
+    - Polygon
+    - hardhat
+    - IPFS
+    - Next 
+  - Application Design
+  - Smart Contract Design (Give high level overview of the smart contract would look like)
+  - Smart Contract Security
+
+
+- **IMPLEMENTATION**
+  - Smart Contract design
+  - UI Mockups
+  - Testing
   
 ---
   
