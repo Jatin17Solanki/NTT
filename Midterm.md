@@ -4,7 +4,9 @@
 
 ---
 
-# Index for Background Section
+# Report
+
+>**Link to report:** https://docs.google.com/document/d/1kwYLHWZ9ZIdIGLF7D7alX170zaOm5rHEs_VwmWHj6ZA/edit?usp=sharing
 
 - **BACKGROUND**
   - What is Ethereum?
