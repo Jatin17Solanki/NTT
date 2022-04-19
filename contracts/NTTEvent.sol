@@ -84,8 +84,19 @@ contract NTTEvent is ERC1238{
         //emit event
     }
 
-    function _validDate() private pure returns (bool) {
-        return true;
+    function _validDate() private view returns (bool) {
+        if(eventInfo.endDate == 0) {
+            if(block.timestamp > eventInfo.startDate)
+                return true;
+            else
+                return false;
+        }
+        else {
+            if(block.timestamp > eventInfo.startDate && block.timestamp < eventInfo.endDate)
+                return true;
+            else
+                return false;
+        }
     }
 
     function mint(address _user) public returns (uint256) {
@@ -93,7 +104,7 @@ contract NTTEvent is ERC1238{
         require(whitelist[_user] == Status.NotClaimed, "Not eligible to claim token!");
         
         //check if time is within date range
-        require(_validDate() == true, "Minting period expired");
+        require(_validDate() == true, "Minting period expired/yet to begin");
 
         _tokenIds.increment();
         uint256 tokenId = _tokenIds.current();
