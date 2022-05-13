@@ -1,46 +1,73 @@
 // SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.4;
 
-contract ERC1238 {
-    // Mapping from token ID to owner address
-    mapping(uint256 => address) private _owners;
+import "./NTTEvent.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 
-    // Mapping owner address to token count
-    mapping(address => uint256) private _balances;
+contract Factory {
+    using Counters for Counters.Counter;
+    Counters.Counter private _contractIds;
 
-    function _exists(uint256 tokenId) internal view virtual returns (bool) {
-        return _owners[tokenId] != address(0);
+    address private owner;
+
+    event NTTContractCreated(
+        uint256 contractId,
+        address contractAddress,
+        address creatorAddress,
+        string title,
+        string description,
+        string[] links,
+        string imageHash,
+        string associatedCommunity,
+        uint256 startDate,
+        uint256 endDate
+    );
+
+    constructor() {
+        owner = msg.sender;
     }
 
-    function ownerOf(uint256 tokenId) public view virtual returns (address) {
-        address owner = _owners[tokenId];
-        require(
-            owner != address(0),
-            "ERC1238: owner query for nonexistent token"
+    function deployNTT(
+        string memory _title,
+        string memory _description,
+        string[] memory _links,
+        string memory _imageHash,
+        string memory _associatedCommunity,
+        uint256 _startDate,
+        uint256 _endDate,
+        address[] memory _list
+    ) public returns (address) {
+        _contractIds.increment();
+        uint256 _id = _contractIds.current();
+
+        NTTEvent nttEvent = new NTTEvent(
+            msg.sender,
+            _title,
+            _description,
+            _links,
+            _imageHash,
+            _associatedCommunity,
+            _startDate,
+            _endDate,
+            _id,
+            address(this)
         );
-        return owner;
-    }
 
-    function _mint(address to, uint256 tokenId) internal virtual {
-        require(
-            to != address(0),
-            "ERC1238: mint to the zero address not permitted"
+        nttEvent.addToWhitelist(_list);
+        emit NTTContractCreated(
+            _id,
+            address(nttEvent),
+            msg.sender,
+            _title,
+            _description,
+            _links,
+            _imageHash,
+            _associatedCommunity,
+            _startDate,
+            _endDate
         );
-        require(!_exists(tokenId), "ERC1238: token already minted");
 
-        _balances[to] += 1;
-        _owners[tokenId] = to;
-    }
-
-    function _burn(uint256 tokenId) internal virtual {
-        address owner = ownerOf(tokenId);
-        require(
-            _exists(tokenId),
-            "ERC1238: cannot burn a token that does not exist"
-        );
-        require(_balances[owner] > 0, "ERC1238: no tokens to burn");
-
-        _balances[owner] -= 1;
-        delete _owners[tokenId];
+        return address(nttEvent);
     }
 }
