@@ -23,28 +23,6 @@
 
 ---
 
-## Features
-
-### Core
-- NTTs cannot be bought.
-- NTTs cannot be transferred after mint.
-- NTTs can be burned by their current holders.
-- NTTs can be burned by their issuers.
-
-
-### Additional
-- Find a mechanism for tokens to be put at stake - however if lost they become burned instead of transferred.
-  - I expect that this will have to do with the NTT registry implementation rather than the NTT standard
-  - The use case we are targeting are putting "reputation" at risk type of dynamics.
-
-
->**NOTE:** A Badge Token standard will have an interface that answers the following questions:
->- can it only be minted by the authority (contract owner)?
->- can it be transferred to another address?
->- has the authority’s permission to transfer to a given address?
->IMO, by having an interface which replies to these questions, we can achieve a lot of different use cases, while being easily understandable.
-
----
 
 ## List of NTT based dapps for reference
 
