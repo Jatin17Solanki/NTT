@@ -10,26 +10,22 @@ contract Factory {
 
     address private owner;
 
+    event NTTContractCreated(
+        uint256 contractId,
+        address contractAddress,
+        address creatorAddress,
+        string title,
+        string description,
+        string[] links,
+        string imageHash,
+        string associatedCommunity,
+        uint256 startDate,
+        uint256 endDate
+    );
+
     constructor() {
         owner = msg.sender;
     }
-
-    struct NTTEventData {
-        uint256 contractId;
-        address contractAddress;
-        address creatorAddress; //redundant as the value is equal to the key of register. check if it can be eliminated
-        string title;
-        string associatedCommunity;
-        uint256 timestamp;
-    }
-
-    struct NTTData {
-        address contractAddress;
-        uint256 tokenId;
-    }
-
-    mapping(address => NTTEventData[]) private issuerRegister;
-    mapping(address => NTTData[]) private receiverRegister;
 
     function deployNTT(
         string memory _title,
@@ -40,8 +36,10 @@ contract Factory {
         uint256 _startDate,
         uint256 _endDate,
         address[] memory _list
-    ) public {
-        address currentContractAddress = address(this);
+    ) public returns (address) {
+        _contractIds.increment();
+        uint256 _id = _contractIds.current();
+
         NTTEvent nttEvent = new NTTEvent(
             msg.sender,
             _title,
@@ -51,55 +49,24 @@ contract Factory {
             _associatedCommunity,
             _startDate,
             _endDate,
-            currentContractAddress
+            _id,
+            address(this)
         );
-        address nttEventAddress = address(nttEvent);
 
-        //set whitelist
         nttEvent.addToWhitelist(_list);
+        emit NTTContractCreated(
+            _id,
+            address(nttEvent),
+            msg.sender,
+            _title,
+            _description,
+            _links,
+            _imageHash,
+            _associatedCommunity,
+            _startDate,
+            _endDate
+        );
 
-        //get contract id
-        _contractIds.increment();
-
-        uint256 _id = _contractIds.current();
-        //update the creator data
-        NTTEventData memory _nttEventData = NTTEventData({
-            contractId: _id,
-            contractAddress: nttEventAddress,
-            creatorAddress: msg.sender,
-            title: _title,
-            associatedCommunity: _associatedCommunity,
-            timestamp: block.timestamp
-        });
-
-        issuerRegister[msg.sender].push(_nttEventData);
-
-        //emit event
-    }
-
-    function mintFromNTTEvent(address _contractAddress) public {
-        NTTEvent nttEvent = NTTEvent(_contractAddress);
-        uint256 _tokenId = nttEvent.mint(msg.sender);
-
-        require(_tokenId != 0, "Mint failed!");
-        NTTData memory _nttData = NTTData({
-            tokenId: _tokenId,
-            contractAddress: _contractAddress
-        });
-
-        receiverRegister[msg.sender].push(_nttData);
-    }
-
-    function getContractDeployedInfo()
-        public
-        view
-        returns (NTTEventData[] memory)
-    {
-        return issuerRegister[msg.sender];
-    }
-
-    //returns data of contract where tokens have been issued
-    function getMyNTTContractData() public view returns (NTTData[] memory) {
-        return receiverRegister[msg.sender];
+        return address(nttEvent);
     }
 }

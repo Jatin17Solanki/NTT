@@ -5,7 +5,7 @@ contract ERC1238 {
     // Mapping from token ID to owner address
     mapping(uint256 => address) private _owners;
 
-    // Mapping owner address to token count
+    // Mapping owner address to token count.
     mapping(address => uint256) private _balances;
 
     function _exists(uint256 tokenId) internal view virtual returns (bool) {

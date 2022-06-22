@@ -4,20 +4,11 @@ pragma solidity ^0.8.4;
 import "./NTTEvent.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract Factory{
+contract Factory {
     using Counters for Counters.Counter;
     Counters.Counter private _contractIds;
 
     address private owner;
-
-    event contractCreated(
-        uint256 contractId,
-        address contractAddress,
-        address creatorAddress,
-        string title,
-        string associatedCommunity,
-        uint256 timestamp
-    );
 
     constructor() {
         owner = msg.sender;
@@ -41,9 +32,9 @@ contract Factory{
     mapping(address => NTTData[]) private receiverRegister;
 
     function deployNTT(
-        string memory _title, 
-        string memory _description, 
-        string[] memory _links, 
+        string memory _title,
+        string memory _description,
+        string[] memory _links,
         string memory _imageHash,
         string memory _associatedCommunity,
         uint256 _startDate,
@@ -51,7 +42,17 @@ contract Factory{
         address[] memory _list
     ) public {
         address currentContractAddress = address(this);
-        NTTEvent nttEvent = new NTTEvent(msg.sender, _title, _description, _links, _imageHash, _associatedCommunity, _startDate, _endDate, currentContractAddress);
+        NTTEvent nttEvent = new NTTEvent(
+            msg.sender,
+            _title,
+            _description,
+            _links,
+            _imageHash,
+            _associatedCommunity,
+            _startDate,
+            _endDate,
+            currentContractAddress
+        );
         address nttEventAddress = address(nttEvent);
 
         //set whitelist
@@ -89,8 +90,11 @@ contract Factory{
         receiverRegister[msg.sender].push(_nttData);
     }
 
-
-    function getContractDeployedInfo() public view returns (NTTEventData[] memory) {
+    function getContractDeployedInfo()
+        public
+        view
+        returns (NTTEventData[] memory)
+    {
         return issuerRegister[msg.sender];
     }
 

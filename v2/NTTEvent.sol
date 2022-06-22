@@ -7,10 +7,10 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 contract NTTEvent is ERC1238 {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
-
     address private factory;
 
     struct EventInfo {
+        uint256 contractId;
         address creator;
         string title;
         string description;
@@ -33,12 +33,47 @@ contract NTTEvent is ERC1238 {
         NotClaimed
     }
 
-    //TODO: Try to optimize whitelist functionality
-    address[] private receiverRegister;
+    event TokenMinted(
+        address contractAddress,
+        uint256 tokenId,
+        address creatorAddress,
+        address receiverAddress,
+        string title,
+        string associatedCommunity,
+        bool isValid
+    );
+    event TokenBurnt(
+        address contractAddress,
+        uint256 tokenId,
+        address creatorAddress,
+        address receiverAddress,
+        string title,
+        string associatedCommunity,
+        bool isValid
+    );
+    event WhitelistAdded(address contractAddress, address[] list);
+    event WhitelistRemoved(address contractAddress, address[] list);
+    event WhitelistUpdated(
+        address contractAddress,
+        address receiver,
+        uint256 status
+    );
+    event NTTContractUpdated(
+        uint256 contractId,
+        address contractAddress,
+        address creatorAddress,
+        string title,
+        string description,
+        string[] links,
+        string imageHash,
+        string associatedCommunity,
+        uint256 startDate,
+        uint256 endDate
+    );
+
     mapping(address => Status) private whitelist;
     mapping(uint256 => address) private tokenOwners;
 
-    //TODO: Try if this info can be emitted as an event
     EventInfo private eventInfo;
 
     constructor(
@@ -50,6 +85,7 @@ contract NTTEvent is ERC1238 {
         string memory _associatedCommunity,
         uint256 _startDate,
         uint256 _endDate,
+        uint256 _contractId,
         address _factory
     ) {
         eventInfo.creator = _creator;
@@ -60,107 +96,39 @@ contract NTTEvent is ERC1238 {
         eventInfo.associatedCommunity = _associatedCommunity;
         eventInfo.startDate = _startDate;
         eventInfo.endDate = _endDate;
+        eventInfo.contractId = _contractId;
         factory = _factory;
     }
 
-    function addToWhitelist(address[] memory list) public {
+    function mint() public returns (uint256) {
         require(
-            block.timestamp < eventInfo.startDate,
-            "Whitelist cannot be modified after the event has started"
+            whitelist[msg.sender] != Status.Claimed,
+            "Token already minted"
         );
         require(
-            msg.sender == eventInfo.creator || msg.sender == factory,
-            "Only contract owner can call this function"
-        );
-        uint256 size = list.length;
-        for (uint256 i = 0; i < size; i++) {
-            if (whitelist[list[i]] == Status.Revoked) {
-                whitelist[list[i]] = Status.NotClaimed;
-                receiverRegister.push(list[i]);
-            }
-        }
-    }
-
-    function removeFromWhitelist(address[] memory list) public {
-        require(
-            block.timestamp < eventInfo.startDate,
-            "Whitelist cannot be modified after the event has started"
-        );
-        require(
-            msg.sender == eventInfo.creator,
-            "Only contract owner can call this function"
-        );
-        uint256 size = list.length;
-        for (uint256 i = 0; i < size; i++) {
-            delete whitelist[list[i]];
-        }
-    }
-
-    function getWhitelist() public view returns (address[] memory) {
-        require(
-            msg.sender == eventInfo.creator,
-            "Only contract owner can call this function"
-        );
-        uint256 totalSize = receiverRegister.length;
-        uint256 count = 0;
-        uint256 curIndex = 0;
-
-        //Get the count of token owners who are eligble to mint
-        for (uint256 i = 0; i < totalSize; i++) {
-            address _receiver = receiverRegister[i];
-            if (whitelist[_receiver] != Status.Revoked) count += 1;
-        }
-
-        address[] memory addressList = new address[](count);
-
-        for (uint256 i = 0; i < totalSize; i++) {
-            address _receiver = receiverRegister[i];
-            if (whitelist[_receiver] != Status.Revoked) {
-                addressList[curIndex] = _receiver;
-                curIndex += 1;
-            }
-        }
-
-        return addressList;
-    }
-
-    function _validDate() private view returns (bool) {
-        if (eventInfo.endDate == 0) {
-            if (block.timestamp > eventInfo.startDate) return true;
-            else return false;
-        } else {
-            if (
-                block.timestamp > eventInfo.startDate &&
-                block.timestamp < eventInfo.endDate
-            ) return true;
-            else return false;
-        }
-    }
-
-    function mint(address _user) public returns (uint256) {
-        require(
-            msg.sender == factory,
-            "Mint function can only be called by factory"
-        );
-        require(whitelist[_user] != Status.Claimed, "Token already minted");
-        require(
-            whitelist[_user] != Status.Revoked &&
-                whitelist[_user] == Status.NotClaimed,
+            whitelist[msg.sender] != Status.Revoked &&
+                whitelist[msg.sender] == Status.NotClaimed,
             "Not eligible to claim token!"
         );
-
-        //check if time is within date range
         require(_validDate() == true, "Minting period expired/yet to begin");
 
         _tokenIds.increment();
         uint256 tokenId = _tokenIds.current();
 
-        _mint(_user, tokenId);
+        _mint(msg.sender, tokenId);
+        whitelist[msg.sender] = Status.Claimed;
+        tokenOwners[tokenId] = msg.sender;
 
-        whitelist[_user] = Status.Claimed;
-
-        tokenOwners[tokenId] = _user;
-
+        emit WhitelistUpdated(address(this), msg.sender, 1);
+        emit TokenMinted(
+            address(this),
+            tokenId,
+            eventInfo.creator,
+            msg.sender,
+            eventInfo.title,
+            eventInfo.associatedCommunity,
+            true
+        );
         return tokenId;
     }
 
@@ -176,6 +144,106 @@ contract NTTEvent is ERC1238 {
 
         whitelist[_owner] = Status.Revoked;
         delete tokenOwners[_tokenId];
+
+        emit WhitelistUpdated(address(this), _owner, 0);
+        emit TokenBurnt(
+            address(this),
+            _tokenId,
+            eventInfo.creator,
+            _owner,
+            eventInfo.title,
+            eventInfo.associatedCommunity,
+            false
+        );
+    }
+
+    function addToWhitelist(address[] memory list) public {
+        require(
+            msg.sender == eventInfo.creator || msg.sender == factory,
+            "Only contract owner can call this function"
+        );
+        require(
+            block.timestamp < eventInfo.startDate,
+            "Whitelist cannot be modified after the event has started"
+        );
+        uint256 size = list.length;
+        for (uint256 i = 0; i < size; i++) {
+            if (whitelist[list[i]] == Status.Revoked) {
+                whitelist[list[i]] = Status.NotClaimed;
+            }
+        }
+
+        emit WhitelistAdded(address(this), list);
+    }
+
+    function removeFromWhitelist(address[] memory list) public {
+        require(
+            msg.sender == eventInfo.creator,
+            "Only contract owner can call this function"
+        );
+        require(
+            block.timestamp < eventInfo.startDate,
+            "Whitelist cannot be modified after the event has started"
+        );
+        uint256 size = list.length;
+        for (uint256 i = 0; i < size; i++) {
+            delete whitelist[list[i]];
+        }
+
+        emit WhitelistRemoved(address(this), list);
+    }
+
+    function updateDetails(
+        string memory _title,
+        string memory _description,
+        string[] memory _links,
+        string memory _imageHash,
+        string memory _associatedCommunity
+    ) public {
+        require(
+            msg.sender == eventInfo.creator,
+            "Only contract owner can call this function"
+        );
+        require(
+            block.timestamp < eventInfo.startDate,
+            "Details cannot be modified after the event has started"
+        );
+
+        eventInfo.title = _title;
+        eventInfo.description = _description;
+        eventInfo.links = _links;
+        eventInfo.imageHash = _imageHash;
+        eventInfo.associatedCommunity = _associatedCommunity;
+
+        emit NTTContractUpdated(
+            eventInfo.contractId,
+            address(this),
+            eventInfo.creator,
+            eventInfo.title,
+            eventInfo.description,
+            eventInfo.links,
+            eventInfo.imageHash,
+            eventInfo.associatedCommunity,
+            eventInfo.startDate,
+            eventInfo.endDate
+        );
+    }
+
+    function _validDate() private view returns (bool) {
+        if (eventInfo.endDate == 0) {
+            if (block.timestamp > eventInfo.startDate) return true;
+            else return false;
+        } else {
+            if (
+                block.timestamp > eventInfo.startDate &&
+                block.timestamp < eventInfo.endDate
+            ) return true;
+            else return false;
+        }
+    }
+
+    function getReceiverStatus() public view returns (Status) {
+        return whitelist[msg.sender];
     }
 
     function getEventDetails() public view returns (EventInfo memory) {
@@ -192,7 +260,7 @@ contract NTTEvent is ERC1238 {
         uint256 count = 0;
         uint256 curIndex = 0;
 
-        //Get the count of users who have claimed the tokens
+        //Get the count of users who have claimed the tokens.
         for (uint256 i = 1; i <= totalSize; i++)
             if (tokenOwners[i] != address(0)) count += 1;
 
@@ -212,84 +280,5 @@ contract NTTEvent is ERC1238 {
         }
 
         return tokenList;
-    }
-
-    function fetchTokenRevoked() public view returns (TokenInfo[] memory) {
-        require(
-            msg.sender == eventInfo.creator,
-            "Only contract owner can call this function"
-        );
-
-        uint256 totalSize = _tokenIds.current();
-        uint256 count = 0;
-        uint256 curIndex = 0;
-
-        //Get the count of users whose tokens have been revoked after mint
-        for (uint256 i = 1; i <= totalSize; i++)
-            if (tokenOwners[i] == address(0)) count += 1;
-
-        TokenInfo[] memory tokenList = new TokenInfo[](count);
-
-        for (uint256 id = 1; id <= totalSize; id++) {
-            address _owner = tokenOwners[id];
-            if (_owner == address(0)) {
-                TokenInfo memory _tokenInfo = TokenInfo(
-                    Status.Revoked,
-                    _owner,
-                    id
-                );
-                tokenList[curIndex] = _tokenInfo;
-                curIndex += 1;
-            }
-        }
-
-        return tokenList;
-    }
-
-    //returns a list of users who are eligble but have not minted their token yet
-    function fetchTokenNotClaimed() public view returns (TokenInfo[] memory) {
-        require(
-            msg.sender == eventInfo.creator,
-            "Only contract owner can call this function"
-        );
-
-        uint256 totalSize = receiverRegister.length;
-        uint256 count = 0;
-        uint256 curIndex = 0;
-
-        //Get the count of users who have not yet claimed the tokens
-        for (uint256 i = 0; i < totalSize; i++) {
-            address _receiver = receiverRegister[i];
-            if (whitelist[_receiver] == Status.NotClaimed) count += 1;
-        }
-
-        TokenInfo[] memory tokenList = new TokenInfo[](count);
-
-        for (uint256 i = 0; i < totalSize; i++) {
-            address _receiver = receiverRegister[i];
-            if (whitelist[_receiver] == Status.NotClaimed) {
-                TokenInfo memory _tokenInfo = TokenInfo(
-                    Status.NotClaimed,
-                    _receiver,
-                    0
-                );
-                tokenList[curIndex] = _tokenInfo;
-                curIndex += 1;
-            }
-        }
-
-        return tokenList;
-    }
-
-    function getReceiverStatus() public view returns (Status) {
-        return whitelist[msg.sender];
-    }
-
-    function fetchTokenOwned() public view returns (EventInfo memory) {
-        require(
-            whitelist[msg.sender] == Status.Claimed,
-            "No token claimed/issued."
-        );
-        return eventInfo;
     }
 }
